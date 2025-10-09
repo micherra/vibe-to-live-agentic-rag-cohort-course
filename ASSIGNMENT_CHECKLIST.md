@@ -4,29 +4,29 @@ Use this checklist to track your progress on the Week 1 assignment.
 
 ## Prerequisites ✅
 
-- [ ] Created OpenAI account and got API key
-- [ ] Created Qdrant Cloud account and cluster
-- [ ] Opened project in GitHub Codespaces (or local dev container)
-- [ ] Copied `.env.example` to `.env` and filled in credentials
-- [ ] Ran setup script: `cd backend && uv run python ../scripts/setup_qdrant.py`
+- [x] Created OpenAI account and got API key
+- [x] Created Qdrant Cloud account and cluster
+- [x] Opened project in GitHub Codespaces (or local dev container)
+- [x] Copied `.env.example` to `.env` and filled in credentials
+- [x] Ran setup script: `cd backend && uv run python ../scripts/setup_qdrant.py`
 
 ## Learning Phase 📚
 
-- [ ] Read the main README.md
-- [ ] Read `backend/README.md`
-- [ ] Read `examples/04_docker_basics.md`
-- [ ] Ran `examples/01_openai_agents_basics.py` and understood the code
-- [ ] Ran `examples/02_qdrant_ingestion.py` and understood the code
-- [ ] Ran `examples/03_qdrant_search.py` and understood the code
-- [ ] Reviewed `examples/05_complete_rag_example.py` (reference only)
+- [x] Read the main README.md
+- [x] Read `backend/README.md`
+- [ ] Read `examples/04_docker_basics.md` [UNAVAILABLE]
+- [x] Ran `examples/01_openai_agents_basics.py` and understood the code
+- [x] Ran `scripts/data_pipeline/ingest_fed_speeches.py` and understood the code
+- [x] Ran `examples/03_qdrant_search.py` and understood the code
+- [ ] Reviewed `examples/05_complete_rag_example.py` (reference only) [UNAVAILABLE]
 
 ## Implementation Phase 🔨
 
 ### File 1: `backend/src/tools/vector_search.py`
 
-- [ ] Implemented `VectorSearchTool.__init__()`
-  - [ ] Initialized `self.qdrant_client` with URL and API key
-  - [ ] Initialized `self.openai_client` with API key
+- [x] Implemented `VectorSearchTool.__init__()`
+  - [x] Initialized `self.qdrant_client` with URL and API key
+  - [x] Initialized `self.openai_client` with API key
   
 - [ ] Implemented `VectorSearchTool._generate_embedding()`
   - [ ] Called OpenAI embeddings API

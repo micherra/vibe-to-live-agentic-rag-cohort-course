@@ -33,7 +33,7 @@ class VectorSearchTool:
         self, 
         qdrant_url: str = None, 
         qdrant_api_key: str = None,
-        collection_name: str = None,
+        collection_name: str = "fed_speeches",
         model_name: str = "BAAI/bge-small-en"
     ):
         """
@@ -45,32 +45,15 @@ class VectorSearchTool:
             collection_name: Name of the collection (defaults to 'fed_speeches')
             model_name: FastEmbed model name (defaults to 'BAAI/bge-small-en')
         """
-        # TODO 1: Get credentials from environment variables or use provided parameters
-        # Hint: Use os.getenv("VARIABLE_NAME") to read environment variables
-        # Hint: Use the 'or' operator to fallback to parameters if env var is not set
-        # Example: self.qdrant_url = qdrant_url or os.getenv("QDRANT_URL")
+        self.qdrant_url = qdrant_url or os.getenv("QDRANT_URL")
+        self.qdrant_api_key = qdrant_api_key or os.getenv("QDRANT_API_KEY")
+
+        if not self.qdrant_url or not self.qdrant_api_key:
+            raise ValueError("Both Qdrant URL and API key must be provided.")
+                
+        self.qdrant_client = QdrantClient(url=self.qdrant_url, api_key=self.qdrant_api_key)
         
-        self.qdrant_url = None  # TODO: Replace with actual implementation
-        self.qdrant_api_key = None  # TODO: Replace with actual implementation
-        
-        # TODO 2: Validate that both URL and API key are provided
-        # Hint: Check if either is None or empty, then raise ValueError
-        # Hint: Use an if statement to check: if not self.qdrant_url or not self.qdrant_api_key:
-        
-        # TODO: Add validation here
-        
-        # TODO 3: Initialize the Qdrant client
-        # Hint: Create a QdrantClient instance with url and api_key parameters
-        # Example: self.qdrant_client = QdrantClient(url=..., api_key=...)
-        
-        self.qdrant_client = None  # TODO: Replace with actual QdrantClient initialization
-        
-        # TODO 4: Set collection name and model name with defaults
-        # Hint: Use the same pattern as above - use provided value or default
-        # Default collection_name: "fed_speeches"
-        # Default model_name is already set in the function signature
-        
-        self.collection_name = None  # TODO: Replace with actual implementation
+        self.collection_name = collection_name
         self.model_name = model_name
 
     def search(self, query: str, limit: int = 5) -> list[dict]:

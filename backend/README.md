@@ -31,7 +31,7 @@ Your task is to complete the TODO sections in the following files:
 ### 1. `src/tools/vector_search.py`
 
 Implement the `VectorSearchTool` class:
-- [ ] Initialize Qdrant and OpenAI clients in `__init__()`
+- [x] Initialize Qdrant and OpenAI clients in `__init__()`
 - [ ] Implement `_generate_embedding()` to create embeddings
 - [ ] Implement `search()` to perform vector similarity search
 - [ ] Implement `search_knowledge_base()` tool function
