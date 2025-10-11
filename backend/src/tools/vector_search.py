@@ -13,6 +13,15 @@ Learning Objectives:
 
 import os
 from qdrant_client import QdrantClient, models
+import pydantic
+
+class SpeechMetadata(pydantic.BaseModel):
+    title: str
+    speaker: str
+    pub_date: str
+    category: str
+    url: str
+    description: str
 
 
 class VectorSearchTool:
@@ -70,15 +79,13 @@ class VectorSearchTool:
             - metadata: Document metadata (title, speaker, date, etc.)
             - score: Similarity score
         """
-        # TODO 5: Perform search using Qdrant's query_points method
-        # Hint: Use self.qdrant_client.query_points() with the following parameters:
-        #   - collection_name: self.collection_name
-        #   - query: models.Document(text=query, model=self.model_name)
-        #   - limit: limit
-        # Hint: The result has a .points attribute that contains the list of results
-        # Example: results = self.qdrant_client.query_points(...).points
+        document = models.Document(text=query, model=self.model_name)
         
-        search_results = []  # TODO: Replace with actual query_points call
+        search_results = self.qdrant_client.query_points(
+            collection_name=self.collection_name,
+            query=document,
+            limit=limit
+        )
         
         # TODO 6: Format results into a list of dictionaries
         # Hint: Loop through search_results and extract information
@@ -157,4 +164,3 @@ def search_knowledge_base(query: str, limit: int = 5) -> str:
         
     except Exception as e:
         return f"Error searching knowledge base: {str(e)}"
-
