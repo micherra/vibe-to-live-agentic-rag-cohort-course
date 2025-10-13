@@ -15,7 +15,7 @@ def check_imports():
     """Check if the file can be imported."""
     print("🔍 Step 1: Checking imports...")
     try:
-        from tools.vector_search_todo import VectorSearchTool, search_knowledge_base
+        from backend.src.tools.vector_search import VectorSearchTool, search_knowledge_base
         print("✅ Imports successful!")
         return True, VectorSearchTool, search_knowledge_base
     except Exception as e:

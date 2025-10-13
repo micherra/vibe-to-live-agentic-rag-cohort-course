@@ -48,7 +48,7 @@ class VectorSearchTool:
         self.qdrant_api_key = qdrant_api_key or os.getenv("QDRANT_API_KEY")
 
         if not self.qdrant_url or not self.qdrant_api_key:
-            raise ValueError("Both Qdrant URL and API key must be provided.")
+            raise ValueError("QDRANT_URL and QDRANT_API_KEY must be provided")
                 
         self.qdrant_client = QdrantClient(url=self.qdrant_url, api_key=self.qdrant_api_key)
         
@@ -77,31 +77,35 @@ class VectorSearchTool:
             limit=limit
         )
         
-        # TODO 6: Format results into a list of dictionaries
-        # Hint: Loop through search_results and extract information
-        # Hint: Each result has .payload (dict) and .score (float) attributes
-        # Hint: Use result.payload.get("key", "") to safely get values with defaults
+        # Format results into a list of dictionaries.
+        # The client returns an object with a `.points` list in our tests.
+        points = getattr(search_results, "points", None)
+        if points is None:
+            # Fallback: if the mock returns a list directly
+            points = search_results
+        
+        if not points:
+            return []
         
         formatted_results = []
-        for result in search_results:
+        for result in points:
+            payload = getattr(result, "payload", {}) or {}
+            score = getattr(result, "score", 0.0)
             formatted_result = {
-                "content": result.payload.get("document", ""),
+                "content": payload.get("document", ""),
                 "metadata": {
-                    "title": result.payload.get("title", ""),
-                    "speaker": result.payload.get("speaker", ""),
-                    "pub_date": result.payload.get("pub_date", ""),
-                    "category": result.payload.get("category", ""),
-                    "url": result.payload.get("url", ""),
-                    "description": result.payload.get("description", ""),
-                    "content_length": result.payload.get("content_length", 0),
-                    "scraped_at": result.payload.get("scraped_at", "")
+                    "title": payload.get("title", ""),
+                    "speaker": payload.get("speaker", ""),
+                    "pub_date": payload.get("pub_date", ""),
+                    "category": payload.get("category", ""),
+                    "url": payload.get("url", ""),
+                    "description": payload.get("description", ""),
+                    "content_length": payload.get("content_length", 0),
+                    "scraped_at": payload.get("scraped_at", ""),
                 },
-                "score": result.score
+                "score": score,
             }
             formatted_results.append(formatted_result)
-        # TODO: Add your loop here to format results
-        # Each formatted result should be a dict with keys: "content", "metadata", "score"
-        # metadata should include: title, speaker, pub_date, category, url, description
         
         return formatted_results
 
@@ -119,21 +123,29 @@ class VectorSearchTool:
         # Hint: If an exception occurs, return a dict with exists=False and error message
         
         try:
-            # TODO: Call get_collection and extract info
-            # collection_info = ...
-            # Return dict with: exists, points_count, vector_size, distance
+            # Get collection information from Qdrant
             collection_info = self.qdrant_client.get_collection(self.collection_name)
+
+            # Prefer nested config (Qdrant >=1.7), fallback to top-level attributes
+            points_count = getattr(collection_info, "points_count", None)
+            try:
+                vector_cfg = collection_info.config.params.vectors
+                vector_size = getattr(vector_cfg, "size", None)
+                distance = getattr(vector_cfg, "distance", None)
+            except Exception:
+                vector_size = getattr(collection_info, "vector_size", None)
+                distance = getattr(collection_info, "distance", None)
+
             return {
                 "exists": True,
-                "points_count": collection_info.points_count,
-                "vector_size": collection_info.vector_size,
-                "distance": collection_info.distance
+                "points_count": points_count,
+                "vector_size": vector_size,
+                "distance": distance,
             }
         except Exception as e:
-            # TODO: Return error dict
             return {
                 "exists": False,
-                "error": str(e)
+                "error": str(e),
             }
 
 
@@ -172,7 +184,7 @@ def search_knowledge_base(query: str, limit: int = 5) -> str:
         #   - Title, Speaker, Date, Category
         #   - Content snippet (first 300 characters)
 
-        result_summary = f"Found {len(results)}\n"
+        result_summary = f"Found {len(results)} relevant documents\n"
         for i, result in enumerate(results, start=1):
             title = result["metadata"].get("title", "N/A")
             speaker = result["metadata"].get("speaker", "N/A")

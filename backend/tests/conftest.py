@@ -34,3 +34,14 @@ def load_env():
     env_path = Path(__file__).parent.parent.parent / ".env"
     if env_path.exists():
         load_dotenv(env_path)
+
+
+# Ensure tests can patch 'tools.vector_search' while importing from backend.src.tools
+# This avoids embedding test-specific aliases into production code.
+try:
+    import sys as _sys
+    from backend.src.tools import vector_search as _vs
+    _sys.modules.setdefault("tools.vector_search", _vs)
+except Exception:
+    # If import fails in some environments, skip aliasing
+    pass
