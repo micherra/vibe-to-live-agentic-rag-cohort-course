@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from tools.vector_search import VectorSearchTool, search_knowledge_base
+from backend.src.tools.vector_search import VectorSearchTool, search_knowledge_base
 
 
 # Fixtures
@@ -404,3 +404,6 @@ class TestVectorSearchIntegration:
         
         call_args = mock_client_instance.query_points.call_args
         assert call_args.kwargs["collection_name"] == "custom_docs"
+
+if __name__ == "__main__":
+    pytest.main()

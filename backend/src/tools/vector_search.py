@@ -13,16 +13,6 @@ Learning Objectives:
 
 import os
 from qdrant_client import QdrantClient, models
-import pydantic
-
-class SpeechMetadata(pydantic.BaseModel):
-    title: str
-    speaker: str
-    pub_date: str
-    category: str
-    url: str
-    description: str
-
 
 class VectorSearchTool:
     """
@@ -93,6 +83,22 @@ class VectorSearchTool:
         # Hint: Use result.payload.get("key", "") to safely get values with defaults
         
         formatted_results = []
+        for result in search_results:
+            formatted_result = {
+                "content": result.payload.get("document", ""),
+                "metadata": {
+                    "title": result.payload.get("title", ""),
+                    "speaker": result.payload.get("speaker", ""),
+                    "pub_date": result.payload.get("pub_date", ""),
+                    "category": result.payload.get("category", ""),
+                    "url": result.payload.get("url", ""),
+                    "description": result.payload.get("description", ""),
+                    "content_length": result.payload.get("content_length", 0),
+                    "scraped_at": result.payload.get("scraped_at", "")
+                },
+                "score": result.score
+            }
+            formatted_results.append(formatted_result)
         # TODO: Add your loop here to format results
         # Each formatted result should be a dict with keys: "content", "metadata", "score"
         # metadata should include: title, speaker, pub_date, category, url, description
@@ -116,7 +122,13 @@ class VectorSearchTool:
             # TODO: Call get_collection and extract info
             # collection_info = ...
             # Return dict with: exists, points_count, vector_size, distance
-            pass
+            collection_info = self.qdrant_client.get_collection(self.collection_name)
+            return {
+                "exists": True,
+                "points_count": collection_info.points_count,
+                "vector_size": collection_info.vector_size,
+                "distance": collection_info.distance
+            }
         except Exception as e:
             # TODO: Return error dict
             return {
@@ -145,22 +157,40 @@ def search_knowledge_base(query: str, limit: int = 5) -> str:
     
     try:
         # TODO: Create VectorSearchTool instance
-        # tool = VectorSearchTool()
+        tool = VectorSearchTool()
         
         # TODO: Perform search
-        # results = tool.search(query, limit=limit)
+        results = tool.search(query, limit=limit)
         
         # TODO: Check if results are empty
-        # if not results:
-        #     return f"No results found for query: '{query}'"
+        if not results:
+            return f"No results found for query: '{query}'"
         
         # TODO: Format results as a readable string
         # Include: number of documents, and for each result:
         #   - Result number and score
         #   - Title, Speaker, Date, Category
         #   - Content snippet (first 300 characters)
-        
-        return "TODO: Implement search_knowledge_base"
-        
+
+        result_summary = f"Found {len(results)}\n"
+        for i, result in enumerate(results, start=1):
+            title = result["metadata"].get("title", "N/A")
+            speaker = result["metadata"].get("speaker", "N/A")
+            pub_date = result["metadata"].get("pub_date", "N/A")
+            category = result["metadata"].get("category", "N/A")
+            content_snippet = result["content"][:300].replace("\n", " ")
+            score = result["score"]
+
+            document_summary = (
+                f"\n\nResult {i} (Score: {score:.4f}):\n"
+                f"Title: {title}\n"
+                f"Speaker: {speaker}\n"
+                f"Date: {pub_date}\n"
+                f"Category: {category}\n"
+                f"Content Snippet: {content_snippet}..."
+            )
+            result_summary += document_summary + "\n"
+
+        return result_summary.strip()
     except Exception as e:
         return f"Error searching knowledge base: {str(e)}"
